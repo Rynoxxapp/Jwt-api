@@ -12,6 +12,7 @@ from collections import OrderedDict
 import logging
 import urllib.parse
 from flask_caching import Cache
+import random
 
 app = Flask(__name__)
 
@@ -40,6 +41,33 @@ def encrypt_message(plaintext):
     padded_message = pad(plaintext, AES.block_size)
     return cipher.encrypt(padded_message)
 
+
+def generate_random_ip():
+    while True:
+        ip = ".".join(str(random.randint(1, 254)) for _ in range(4))
+
+        first = int(ip.split(".")[0])
+
+        # Reserved/private ranges avoid karein
+        if (
+            first == 10 or
+            first == 127 or
+            first >= 224 or
+            ip.startswith("192.168.") or
+            ip.startswith("169.254.") or
+            ip.startswith("172.16.") or
+            ip.startswith("172.17.") or
+            ip.startswith("172.18.") or
+            ip.startswith("172.19.") or
+            ip.startswith("172.2") or   # 172.20-29
+            ip.startswith("172.30.") or
+            ip.startswith("172.31.")
+        ):
+            continue
+
+        return ip
+        
+        
 def get_token_with_retry(uid, password):
     """Get access token with retry mechanism"""
     oauth_url = "https://100067.connect.garena.com/oauth/guest/token/grant"
@@ -107,7 +135,7 @@ def major_login_with_retry(access_token, open_id):
             game_data.gpu_name = "Adreno (TM) 640"
             game_data.gpu_version = "OpenGL ES 3.0"
             game_data.user_id = "Google|74b585a9-0268-4ad3-8f36-ef41d2e53610"
-            game_data.ip_address = "172.190.111.97"
+            game_data.ip_address = generate_random_ip()
             game_data.language = "en"
             game_data.open_id = open_id
             game_data.access_token = access_token
