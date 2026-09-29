@@ -122,7 +122,7 @@ def major_login_with_retry(access_token, open_id):
             game_data.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             game_data.game_name = "free fire"
             game_data.game_version = 1
-            game_data.version_code = "1.126.1"
+            game_data.version_code = "1.132.1"
             game_data.os_info = "Android OS 9 / API-28 (PI/rel.cjw.20220518.114133)"
             game_data.device_type = "Handheld"
             game_data.network_provider = "Verizon Wireless"
@@ -156,7 +156,7 @@ def major_login_with_retry(access_token, open_id):
                 "Expect": "100-continue",
                 "X-Unity-Version": "2018.4.11f1",
                 "X-GA": "v1 1",
-                "ReleaseVersion": "OB54"
+                "ReleaseVersion": "OB55"
             }
             edata = bytes.fromhex(hex_encrypted_data)
 
