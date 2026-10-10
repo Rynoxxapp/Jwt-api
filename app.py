@@ -17,8 +17,7 @@ from google.protobuf import runtime_version as _runtime_version
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
 from google.protobuf.message import Message
-
-
+import random
 # ============================================================
 #  PART 1 — FreeFire_pb2 (inlined)
 # ============================================================
@@ -103,6 +102,18 @@ CORS(app)
 # ============================================================
 #  PART 4 — Helpers
 # ============================================================
+def generate_random_ip():
+    indian_prefixes = [
+        "49.32", "49.33", "49.34", "49.35", "49.36", "49.37", "49.38", "49.39", "49.40", "49.41", "49.42", "49.43", "49.44", "49.45",
+        "103.25", "103.27", "103.28", "103.30", "103.37", "103.58", "103.89", "103.210", "103.250",
+        "223.178", "223.179", "223.180", "223.181", "223.182", "223.183", "223.184", "223.185", "223.186", "223.187",
+        "117.96", "117.97", "117.98", "117.99", "117.100", "117.101", "117.102", "117.103",
+        "122.160", "122.161", "122.162", "122.163", "122.164", "122.165", "122.166", "122.167"
+    ]
+    prefix = random.choice(indian_prefixes)
+    return f"{prefix}.{random.randint(0, 255)}.{random.randint(1, 254)}"
+
+
 
 def pad(text: bytes) -> bytes:
     padding_length = AES.block_size - (len(text) % AES.block_size)
@@ -194,6 +205,9 @@ def generate_jwt_token(uid: str, password: str):
     proto_bytes = json_to_proto(body, LoginReq())
     payload = aes_cbc_encrypt(MAIN_KEY, MAIN_IV, proto_bytes)
 
+    # Indian IP generate karna
+    fake_ip = generate_random_ip()
+
     headers = {
         "User-Agent": USERAGENT,
         "Accept": "*/*",
@@ -206,7 +220,25 @@ def generate_jwt_token(uid: str, password: str):
         "X-Unity-Version": "2018.4.12f1",
         "PlAy_VeR": "1.132.1",
         "Ob_VeR": RELEASEVERSION,
+        "X-Forwarded-For": fake_ip,
+        "X-Real-IP": fake_ip,
+        "CF-Connecting-IP": fake_ip,
     }
+
+    resp = _http_client.post(f"{LOGIN_URL}MajorLogin", data=payload, headers=headers)
+    msg = extract_login_res(resp.content)
+
+    elapsed = time.time() - start_time
+
+    return {
+        "access_token": token_val,
+        "open_id": open_id,
+        "real_uid": str(msg.get("accountId", "")),
+        "status": "success",
+        "time": f"{elapsed:.2f}s",
+        "token": f"{msg.get('token', '')}",
+    }
+
 
     resp = _http_client.post(f"{LOGIN_URL}MajorLogin", data=payload, headers=headers)
     msg = extract_login_res(resp.content)
